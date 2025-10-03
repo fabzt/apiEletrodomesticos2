@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Estoque; // Certifique-se que o nome do modelo está correto (geralmente é no singular: 'Estoque')
+use App\Models\Estoque; // Renomeie seu modelo de 'Produtos' para 'Estoque' para seguir a convenção
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
@@ -41,11 +41,14 @@ class EstoqueController extends Controller
      */
     public function store(Request $request)
     {
-        // Validação dos dados recebidos (ajuste os campos conforme seu modelo 'Estoque')
+        // Validação dos dados com base na sua migration
         $validator = Validator::make($request->all(), [
-            'nome' => 'required|string|max:255',
-            'quantidade' => 'required|integer|min:0',
-            'fornecedor' => 'nullable|string|max:255',
+            'nomeprod' => 'required|string|max:255',
+            'marcaprod' => 'required|string|max:255',
+            'descprod' => 'required|string',
+            'qtdprod' => 'required|integer',
+            'dtentradaprod' => 'required|date',
+            'dtsaidaprod' => 'nullable|date', // 'nullable' pois a data de saída pode não existir na criação
         ]);
 
         if ($validator->fails()) {
@@ -101,11 +104,24 @@ class EstoqueController extends Controller
      */
     public function update(Request $request, $id)
     {
-        // Validação dos dados recebidos (ajuste os campos conforme seu modelo 'Estoque')
+        // Encontrando o registro no banco ANTES de validar
+        $registro = Estoque::find($id);
+
+        if (!$registro) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Item não encontrado no estoque'
+            ], 404);
+        }
+
+        // Validação dos dados para atualização
         $validator = Validator::make($request->all(), [
-            'nome' => 'required|string|max:255',
-            'quantidade' => 'required|integer|min:0',
-            'fornecedor' => 'nullable|string|max:255',
+            'nomeprod' => 'required|string|max:255',
+            'marcaprod' => 'required|string|max:255',
+            'descprod' => 'required|string',
+            'qtdprod' => 'required|integer',
+            'dtentradaprod' => 'required|date',
+            'dtsaidaprod' => 'nullable|date',
         ]);
 
         if ($validator->fails()) {
@@ -114,16 +130,6 @@ class EstoqueController extends Controller
                 'message' => 'Dados inválidos',
                 'errors' => $validator->errors()
             ], 400);
-        }
-
-        // Encontrando o registro no banco
-        $registro = Estoque::find($id);
-
-        if (!$registro) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Item não encontrado no estoque'
-            ], 404);
         }
 
         // Atualizando os dados do registro com os dados da requisição
