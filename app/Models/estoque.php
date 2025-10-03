@@ -1,10 +1,11 @@
+// Em app/Models/Estoque.php
 <?php
 
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Produtos extends Model
+class Estoque extends Model 
 {
     protected $fillable = [
         'nomeprod',
